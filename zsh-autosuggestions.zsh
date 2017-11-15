@@ -3,7 +3,7 @@
 # v0.4.0
 # Copyright (c) 2013 Thiago de Arruda
 # Copyright (c) 2016-2017 Eric Freese
-# 
+#
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
 # files (the "Software"), to deal in the Software without
@@ -12,10 +12,10 @@
 # copies of the Software, and to permit persons to whom the
 # Software is furnished to do so, subject to the following
 # conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be
 # included in all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 # EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 # OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -66,7 +66,6 @@ ZSH_AUTOSUGGEST_CLEAR_WIDGETS=(
 ZSH_AUTOSUGGEST_ACCEPT_WIDGETS=(
 	forward-char
 	end-of-line
-	vi-forward-char
 	vi-end-of-line
 	vi-add-eol
 )
@@ -78,10 +77,13 @@ ZSH_AUTOSUGGEST_EXECUTE_WIDGETS=(
 # Widgets that accept the suggestion as far as the cursor moves
 ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS=(
 	forward-word
+	vi-forward-char
 	vi-forward-word
 	vi-forward-word-end
 	vi-forward-blank-word
 	vi-forward-blank-word-end
+	vi-find-next-char
+	vi-find-next-char-skip
 )
 
 # Widgets that should be ignored (globbing supported but must be escaped)
@@ -696,3 +698,5 @@ _zsh_autosuggest_start() {
 
 # Start the autosuggestion widgets on the next precmd
 add-zsh-hook precmd _zsh_autosuggest_start
+
+# vim: ts=4 sts=4 sw=4 noet ft=zsh
