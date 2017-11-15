@@ -439,6 +439,13 @@ _zsh_autosuggest_partial_accept() {
 	_zsh_autosuggest_invoke_original_widget $@
 	retval=$?
 
+	# If a vi widget was invoked till the end of the original buffer we need
+	# to increment the cursor position (for whatever reason)
+	if [ $CURSOR -ge $#original_buffer ] && \
+	   [[ "$1" =~ ^${ZSH_AUTOSUGGEST_ORIGINAL_WIDGET_PREFIX}[[:digit:]]+-vi- ]]; then
+		(( CURSOR++ ))
+	fi
+
 	# If we've moved past the end of the original buffer
 	if [ $CURSOR -gt $#original_buffer ]; then
 		# Set POSTDISPLAY to text right of the cursor
