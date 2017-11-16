@@ -290,7 +290,7 @@ _zsh_autosuggest_postdisplay_clear() {
 	fi
 	unset _ZSH_AUTOSUGGEST_POSTDISPLAY
 	unset POSTDISPLAY
-	echo "clear ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
+	echo "$(wc -l ${HOME}/autosuggest.log | awk '{ print $1 }') clear ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
 }
 
 # Restore POSTDIPLAY
@@ -298,13 +298,13 @@ _zsh_autosuggest_postdisplay_restore() {
 	typeset -g _ZSH_AUTOSUGGEST_POSTDISPLAY
 	_ZSH_AUTOSUGGEST_POSTDISPLAY="${_ZSH_AUTOSUGGEST_POSTDISPLAY_PREVIOUS}"
 	POSTDISPLAY="${_ZSH_AUTOSUGGEST_POSTDISPLAY_PREVIOUS}"
-	echo "restore ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
+	echo "$(wc -l ${HOME}/autosuggest.log | awk '{ print $1 }') restore ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
 }
 
 # Get POSTDIPLAY
 _zsh_autosuggest_postdisplay_get() {
 	echo "${_ZSH_AUTOSUGGEST_POSTDISPLAY}"
-	echo "get ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
+	echo "$(wc -l ${HOME}/autosuggest.log | awk '{ print $1 }') get ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
 }
 
 # Set POSTDIPLAY
@@ -314,13 +314,13 @@ _zsh_autosuggest_postdisplay_set() {
 	typeset -g _ZSH_AUTOSUGGEST_POSTDISPLAY
 	_ZSH_AUTOSUGGEST_POSTDISPLAY="$*"
 	POSTDISPLAY="${_ZSH_AUTOSUGGEST_POSTDISPLAY}"
-	echo "set ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
+	echo "$(wc -l ${HOME}/autosuggest.log | awk '{ print $1 }') set ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
 }
 
 # Lenght of POSTDIPLAY
 _zsh_autosuggest_postdisplay_len() {
 	echo "${#_ZSH_AUTOSUGGEST_POSTDISPLAY}"
-	echo "len ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
+	echo "$(wc -l ${HOME}/autosuggest.log | awk '{ print $1 }') len ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
 }
 
 # Disable suggestions
@@ -349,7 +349,7 @@ _zsh_autosuggest_toggle() {
 
 # Clear the suggestion
 _zsh_autosuggest_clear() {
-	echo "w clear ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
+	echo "$(wc -l ${HOME}/autosuggest.log | awk '{ print $1 }') clear ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
 
 	# Remove the suggestion
 	_zsh_autosuggest_postdisplay_clear
@@ -359,7 +359,7 @@ _zsh_autosuggest_clear() {
 
 # Modify the buffer and get a new suggestion
 _zsh_autosuggest_modify() {
-	echo "w modify ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
+	echo "$(wc -l ${HOME}/autosuggest.log | awk '{ print $1 }') modify ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
 
 	local -i retval
 
@@ -416,7 +416,7 @@ _zsh_autosuggest_modify() {
 
 # Fetch a new suggestion based on what's currently in the buffer
 _zsh_autosuggest_fetch() {
-	echo "w fetch ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
+	echo "$(wc -l ${HOME}/autosuggest.log | awk '{ print $1 }') fetch ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
 
 	if zpty -t "$ZSH_AUTOSUGGEST_ASYNC_PTY_NAME" &>/dev/null; then
 		_zsh_autosuggest_async_request "$BUFFER"
@@ -429,7 +429,7 @@ _zsh_autosuggest_fetch() {
 
 # Offer a suggestion
 _zsh_autosuggest_suggest() {
-	echo "w suggest ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
+	echo "$(wc -l ${HOME}/autosuggest.log | awk '{ print $1 }') suggest ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
 
 	local suggestion="$1"
 
@@ -442,7 +442,7 @@ _zsh_autosuggest_suggest() {
 
 # Accept the entire suggestion
 _zsh_autosuggest_accept() {
-	echo "w accept ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
+	echo "$(wc -l ${HOME}/autosuggest.log | awk '{ print $1 }') accept ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
 
 	local -i max_cursor_pos=$#BUFFER
 
@@ -469,7 +469,7 @@ _zsh_autosuggest_accept() {
 
 # Accept the entire suggestion and execute it
 _zsh_autosuggest_execute() {
-	echo "w execute ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
+	echo "$(wc -l ${HOME}/autosuggest.log | awk '{ print $1 }') execute ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
 
 	# Add the suggestion to the buffer
 	BUFFER="$BUFFER$(_zsh_autosuggest_postdisplay_get)"
@@ -484,7 +484,7 @@ _zsh_autosuggest_execute() {
 
 # Partially accept the suggestion
 _zsh_autosuggest_partial_accept() {
-	echo "w partial_accept ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
+	echo "$(wc -l ${HOME}/autosuggest.log | awk '{ print $1 }') partial_accept ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
 
 	local -i retval
 
