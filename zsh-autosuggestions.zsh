@@ -270,8 +270,8 @@ _zsh_autosuggest_highlight_reset() {
 _zsh_autosuggest_highlight_apply() {
 	typeset -g _ZSH_AUTOSUGGEST_LAST_HIGHLIGHT
 
-	if [ $#POSTDISPLAY -gt 0 ]; then
-		_ZSH_AUTOSUGGEST_LAST_HIGHLIGHT="$#BUFFER $(($#BUFFER + $#POSTDISPLAY)) $ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE"
+	if [ $(_zsh_autosuggest_postdisplay_len) -gt 0 ]; then
+		_ZSH_AUTOSUGGEST_LAST_HIGHLIGHT="$#BUFFER $(($#BUFFER + $(_zsh_autosuggest_postdisplay_len))) $ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE"
 		region_highlight+=("$_ZSH_AUTOSUGGEST_LAST_HIGHLIGHT")
 	else
 		unset _ZSH_AUTOSUGGEST_LAST_HIGHLIGHT
@@ -281,6 +281,47 @@ _zsh_autosuggest_highlight_apply() {
 #--------------------------------------------------------------------#
 # Autosuggest Widget Implementations                                 #
 #--------------------------------------------------------------------#
+
+# Clear POSTDIPLAY
+_zsh_autosuggest_postdisplay_clear() {
+	typeset -g _ZSH_AUTOSUGGEST_POSTDISPLAY_PREVIOUS
+	if [ -n "${_ZSH_AUTOSUGGEST_POSTDISPLAY}" ]; then
+		_ZSH_AUTOSUGGEST_POSTDISPLAY_PREVIOUS="${_ZSH_AUTOSUGGEST_POSTDISPLAY}"
+	fi
+	unset _ZSH_AUTOSUGGEST_POSTDISPLAY
+	unset POSTDISPLAY
+	echo "clear ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
+}
+
+# Restore POSTDIPLAY
+_zsh_autosuggest_postdisplay_restore() {
+	typeset -g _ZSH_AUTOSUGGEST_POSTDISPLAY
+	_ZSH_AUTOSUGGEST_POSTDISPLAY="${_ZSH_AUTOSUGGEST_POSTDISPLAY_PREVIOUS}"
+	POSTDISPLAY="${_ZSH_AUTOSUGGEST_POSTDISPLAY_PREVIOUS}"
+	echo "restore ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
+}
+
+# Get POSTDIPLAY
+_zsh_autosuggest_postdisplay_get() {
+	echo "${_ZSH_AUTOSUGGEST_POSTDISPLAY}"
+	echo "get ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
+}
+
+# Set POSTDIPLAY
+_zsh_autosuggest_postdisplay_set() {
+	typeset -g _ZSH_AUTOSUGGEST_POSTDISPLAY_PREVIOUS
+	_ZSH_AUTOSUGGEST_POSTDISPLAY_PREVIOUS="${_ZSH_AUTOSUGGEST_POSTDISPLAY}"
+	typeset -g _ZSH_AUTOSUGGEST_POSTDISPLAY
+	_ZSH_AUTOSUGGEST_POSTDISPLAY="$*"
+	POSTDISPLAY="${_ZSH_AUTOSUGGEST_POSTDISPLAY}"
+	echo "set ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
+}
+
+# Lenght of POSTDIPLAY
+_zsh_autosuggest_postdisplay_len() {
+	echo "${#_ZSH_AUTOSUGGEST_POSTDISPLAY}"
+	echo "len ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
+}
 
 # Disable suggestions
 _zsh_autosuggest_disable() {
@@ -309,7 +350,7 @@ _zsh_autosuggest_toggle() {
 # Clear the suggestion
 _zsh_autosuggest_clear() {
 	# Remove the suggestion
-	unset POSTDISPLAY
+	_zsh_autosuggest_postdisplay_clear
 
 	_zsh_autosuggest_invoke_original_widget $@
 }
@@ -323,10 +364,10 @@ _zsh_autosuggest_modify() {
 
 	# Save the contents of the buffer/postdisplay
 	local orig_buffer="$BUFFER"
-	local orig_postdisplay="$POSTDISPLAY"
+	local orig_postdisplay="$(_zsh_autosuggest_postdisplay_get)"
 
 	# Clear suggestion while waiting for next one
-	unset POSTDISPLAY
+	_zsh_autosuggest_postdisplay_clear
 
 	# Original widget may modify the buffer
 	_zsh_autosuggest_invoke_original_widget $@
@@ -343,14 +384,14 @@ _zsh_autosuggest_modify() {
 
 		# If the string added matches the beginning of the postdisplay
 		if [ "$added" = "${orig_postdisplay:0:$#added}" ]; then
-			POSTDISPLAY="${orig_postdisplay:$#added}"
+			_zsh_autosuggest_postdisplay_set "${orig_postdisplay:$#added}"
 			return $retval
 		fi
 	fi
 
 	# Don't fetch a new suggestion if the buffer hasn't changed
 	if [ "$BUFFER" = "$orig_buffer" ]; then
-		POSTDISPLAY="$orig_postdisplay"
+		_zsh_autosuggest_postdisplay_restore
 		return $retval
 	fi
 
@@ -385,9 +426,9 @@ _zsh_autosuggest_suggest() {
 	local suggestion="$1"
 
 	if [ -n "$suggestion" ] && [ $#BUFFER -gt 0 ]; then
-		POSTDISPLAY="${suggestion#$BUFFER}"
+		_zsh_autosuggest_postdisplay_set "${suggestion#$BUFFER}"
 	else
-		unset POSTDISPLAY
+		_zsh_autosuggest_postdisplay_clear
 	fi
 }
 
@@ -404,10 +445,10 @@ _zsh_autosuggest_accept() {
 	# Only accept if the cursor is at the end of the buffer
 	if [ $CURSOR -eq $max_cursor_pos ]; then
 		# Add the suggestion to the buffer
-		BUFFER="$BUFFER$POSTDISPLAY"
+		BUFFER="$BUFFER$(_zsh_autosuggest_postdisplay_get)"
 
 		# Remove the suggestion
-		unset POSTDISPLAY
+		_zsh_autosuggest_postdisplay_clear
 
 		# Move the cursor to the end of the buffer
 		CURSOR=${#BUFFER}
@@ -419,10 +460,10 @@ _zsh_autosuggest_accept() {
 # Accept the entire suggestion and execute it
 _zsh_autosuggest_execute() {
 	# Add the suggestion to the buffer
-	BUFFER="$BUFFER$POSTDISPLAY"
+	BUFFER="$BUFFER$(_zsh_autosuggest_postdisplay_get)"
 
 	# Remove the suggestion
-	unset POSTDISPLAY
+	_zsh_autosuggest_postdisplay_clear
 
 	# Call the original `accept-line` to handle syntax highlighting or
 	# other potential custom behavior
@@ -437,7 +478,7 @@ _zsh_autosuggest_partial_accept() {
 	local original_buffer="$BUFFER"
 
 	# Temporarily accept the suggestion.
-	BUFFER="$BUFFER$POSTDISPLAY"
+	BUFFER="$BUFFER$(_zsh_autosuggest_postdisplay_get)"
 
 	# Original widget moves the cursor
 	_zsh_autosuggest_invoke_original_widget $@
@@ -453,7 +494,7 @@ _zsh_autosuggest_partial_accept() {
 	# If we've moved past the end of the original buffer
 	if [ $CURSOR -gt $#original_buffer ]; then
 		# Set POSTDISPLAY to text right of the cursor
-		POSTDISPLAY="$RBUFFER"
+		_zsh_autosuggest_postdisplay_set "$RBUFFER"
 
 		# Clip the buffer at the cursor
 		BUFFER="$LBUFFER"
