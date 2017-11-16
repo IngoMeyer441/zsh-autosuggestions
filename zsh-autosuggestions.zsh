@@ -349,6 +349,8 @@ _zsh_autosuggest_toggle() {
 
 # Clear the suggestion
 _zsh_autosuggest_clear() {
+	echo "w clear ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
+
 	# Remove the suggestion
 	_zsh_autosuggest_postdisplay_clear
 
@@ -357,6 +359,8 @@ _zsh_autosuggest_clear() {
 
 # Modify the buffer and get a new suggestion
 _zsh_autosuggest_modify() {
+	echo "w modify ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
+
 	local -i retval
 
 	# Only added to zsh very recently
@@ -412,6 +416,8 @@ _zsh_autosuggest_modify() {
 
 # Fetch a new suggestion based on what's currently in the buffer
 _zsh_autosuggest_fetch() {
+	echo "w fetch ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
+
 	if zpty -t "$ZSH_AUTOSUGGEST_ASYNC_PTY_NAME" &>/dev/null; then
 		_zsh_autosuggest_async_request "$BUFFER"
 	else
@@ -423,6 +429,8 @@ _zsh_autosuggest_fetch() {
 
 # Offer a suggestion
 _zsh_autosuggest_suggest() {
+	echo "w suggest ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
+
 	local suggestion="$1"
 
 	if [ -n "$suggestion" ] && [ $#BUFFER -gt 0 ]; then
@@ -434,6 +442,8 @@ _zsh_autosuggest_suggest() {
 
 # Accept the entire suggestion
 _zsh_autosuggest_accept() {
+	echo "w accept ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
+
 	local -i max_cursor_pos=$#BUFFER
 
 	# When vicmd keymap is active, the cursor can't move all the way
@@ -459,6 +469,8 @@ _zsh_autosuggest_accept() {
 
 # Accept the entire suggestion and execute it
 _zsh_autosuggest_execute() {
+	echo "w execute ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
+
 	# Add the suggestion to the buffer
 	BUFFER="$BUFFER$(_zsh_autosuggest_postdisplay_get)"
 
@@ -472,6 +484,8 @@ _zsh_autosuggest_execute() {
 
 # Partially accept the suggestion
 _zsh_autosuggest_partial_accept() {
+	echo "w partial_accept ${_ZSH_AUTOSUGGEST_POSTDISPLAY}" >> "${HOME}/autosuggest.log"
+
 	local -i retval
 
 	# Save the contents of the buffer so we can restore later if needed
