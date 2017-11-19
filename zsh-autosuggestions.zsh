@@ -86,6 +86,7 @@ ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS=(
 	vi-find-next-char-skip
 	vi-forward-camel
 	vi-backward-camel
+	vi-easy-motion
 )
 
 # Widgets that should be ignored (globbing supported but must be escaped)
