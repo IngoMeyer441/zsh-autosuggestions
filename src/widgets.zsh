@@ -39,6 +39,9 @@ _zsh_autosuggest_clear() {
 _zsh_autosuggest_modify() {
 	local -i retval
 
+	# Only available in zsh >= 5.4
+	local -i KEYS_QUEUED_COUNT
+
 	# Save the contents of the buffer/postdisplay
 	local orig_buffer="$BUFFER"
 	local orig_postdisplay="$POSTDISPLAY"
@@ -49,6 +52,12 @@ _zsh_autosuggest_modify() {
 	# Original widget may modify the buffer
 	_zsh_autosuggest_invoke_original_widget $@
 	retval=$?
+
+	# Don't fetch a new suggestion if there's more input to be read immediately
+	if (( $PENDING > 0 )) || (( $KEYS_QUEUED_COUNT > 0 )); then
+		POSTDISPLAY="$orig_postdisplay"
+		return $retval
+	fi
 
 	# Optimize if manually typing in the suggestion
 	if (( $#BUFFER > $#orig_buffer )); then
@@ -144,7 +153,7 @@ _zsh_autosuggest_execute() {
 
 # Partially accept the suggestion
 _zsh_autosuggest_partial_accept() {
-	local -i retval
+	local -i retval cursor_loc
 
 	# Save the contents of the buffer so we can restore later if needed
 	local original_buffer="$BUFFER"
@@ -156,20 +165,19 @@ _zsh_autosuggest_partial_accept() {
 	_zsh_autosuggest_invoke_original_widget $@
 	retval=$?
 
-	# If a vi widget was invoked till the end of the original buffer we need
-	# to increment the cursor position (for whatever reason)
-	if [ $CURSOR -ge $#original_buffer ] && \
-	   [[ "$1" =~ ^${ZSH_AUTOSUGGEST_ORIGINAL_WIDGET_PREFIX}[[:digit:]]+-vi- ]]; then
-		(( CURSOR++ ))
+	# Normalize cursor location across vi/emacs modes
+	cursor_loc=$CURSOR
+	if [[ "$KEYMAP" = "vicmd" ]]; then
+		cursor_loc=$((cursor_loc + 1))
 	fi
 
 	# If we've moved past the end of the original buffer
-	if (( $CURSOR > $#original_buffer )); then
+	if (( $cursor_loc > $#original_buffer )); then
 		# Set POSTDISPLAY to text right of the cursor
-		POSTDISPLAY="$RBUFFER"
+		POSTDISPLAY="${BUFFER[$(($cursor_loc + 1)),$#BUFFER]}"
 
 		# Clip the buffer at the cursor
-		BUFFER="$LBUFFER"
+		BUFFER="${BUFFER[1,$cursor_loc]}"
 	else
 		# Restore the original buffer
 		BUFFER="$original_buffer"
