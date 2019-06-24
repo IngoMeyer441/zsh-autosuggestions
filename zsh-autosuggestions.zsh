@@ -1,8 +1,8 @@
 # Fish-like fast/unobtrusive autosuggestions for zsh.
 # https://github.com/zsh-users/zsh-autosuggestions
-# v0.6.0
+# v0.6.2
 # Copyright (c) 2013 Thiago de Arruda
-# Copyright (c) 2016-2018 Eric Freese
+# Copyright (c) 2016-2019 Eric Freese
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation
@@ -401,7 +401,7 @@ _zsh_autosuggest_accept() {
 		unset POSTDISPLAY
 
 		# Move the cursor to the end of the buffer
-		CURSOR=${#BUFFER}
+		CURSOR=${max_cursor_pos}
 	fi
 
 	_zsh_autosuggest_invoke_original_widget $@
@@ -571,7 +571,7 @@ _zsh_autosuggest_capture_completion_async() {
 	# https://stackoverflow.com/a/7057118/154703
 	autoload +X _complete
 	functions[_original_complete]=$functions[_complete]
-	_complete () {
+	function _complete() {
 		unset 'compstate[vared]'
 		_original_complete "$@"
 	}
@@ -729,9 +729,9 @@ _zsh_autosuggest_fetch_suggestion() {
 # Async                                                              #
 #--------------------------------------------------------------------#
 
-zmodload zsh/system
-
 _zsh_autosuggest_async_request() {
+	zmodload zsh/system 2>/dev/null # For `$sysparams`
+
 	typeset -g _ZSH_AUTOSUGGEST_ASYNC_FD _ZSH_AUTOSUGGEST_CHILD_PID
 
 	# If we've got a pending request, cancel it
@@ -740,17 +740,20 @@ _zsh_autosuggest_async_request() {
 		exec {_ZSH_AUTOSUGGEST_ASYNC_FD}<&-
 		zle -F $_ZSH_AUTOSUGGEST_ASYNC_FD
 
-		# Zsh will make a new process group for the child process only if job
-		# control is enabled (MONITOR option)
-		if [[ -o MONITOR ]]; then
-			# Send the signal to the process group to kill any processes that may
-			# have been forked by the suggestion strategy
-			kill -TERM -$_ZSH_AUTOSUGGEST_CHILD_PID 2>/dev/null
-		else
-			# Kill just the child process since it wasn't placed in a new process
-			# group. If the suggestion strategy forked any child processes they may
-			# be orphaned and left behind.
-			kill -TERM $_ZSH_AUTOSUGGEST_CHILD_PID 2>/dev/null
+		# We won't know the pid unless the user has zsh/system module installed
+		if [[ -n "$_ZSH_AUTOSUGGEST_CHILD_PID" ]]; then
+			# Zsh will make a new process group for the child process only if job
+			# control is enabled (MONITOR option)
+			if [[ -o MONITOR ]]; then
+				# Send the signal to the process group to kill any processes that may
+				# have been forked by the suggestion strategy
+				kill -TERM -$_ZSH_AUTOSUGGEST_CHILD_PID 2>/dev/null
+			else
+				# Kill just the child process since it wasn't placed in a new process
+				# group. If the suggestion strategy forked any child processes they may
+				# be orphaned and left behind.
+				kill -TERM $_ZSH_AUTOSUGGEST_CHILD_PID 2>/dev/null
+			fi
 		fi
 	fi
 
