@@ -71,6 +71,7 @@ typeset -g ZSH_AUTOSUGGEST_ORIGINAL_WIDGET_PREFIX=autosuggest-orig-
 	ZSH_AUTOSUGGEST_ACCEPT_WIDGETS=(
 		forward-char
 		end-of-line
+		vi-forward-char
 		vi-end-of-line
 		vi-add-eol
 	)
@@ -88,7 +89,6 @@ typeset -g ZSH_AUTOSUGGEST_ORIGINAL_WIDGET_PREFIX=autosuggest-orig-
 	typeset -ga ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS
 	ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS=(
 		forward-word
-		vi-forward-char
 		emacs-forward-word
 		vi-forward-word
 		vi-forward-word-end
@@ -96,9 +96,6 @@ typeset -g ZSH_AUTOSUGGEST_ORIGINAL_WIDGET_PREFIX=autosuggest-orig-
 		vi-forward-blank-word-end
 		vi-find-next-char
 		vi-find-next-char-skip
-		vi-forward-camel
-		vi-backward-camel
-		vi-easy-motion
 	)
 }
 
